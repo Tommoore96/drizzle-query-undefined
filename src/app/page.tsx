@@ -1,11 +1,17 @@
 import { db } from '@/lib/db'
-import { user } from '@/lib/db/schema'
+import { post, user } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 
 // oh yeah, this is the future
 export const runtime = 'edge'
 
 export default async function Home() {
-  const users = await db.select().from(user)
+  console.log(db.query)
+  const users = await db.query.user.findMany({
+    where: eq(user.id, 1)
+  })
+  const tomPosts = await db.query.post.findMany({where: eq(post.authorId, 1)})
+  const elliePosts = await db.query.post.findMany({where: eq(post.authorId, 2)})
 
   const createUser = async () => {
     'use server'
@@ -15,13 +21,17 @@ export default async function Home() {
 
   return (
     <>
-      <p>my users:</p>
-      {users.map((user) => (
+      <p>Posts by Tom:</p>
+      {tomPosts.map((user) => (
+        <div key={user.id}>{user.fullName}</div>
+      ))}
+      <p>Posts by Ellie:</p>
+      {elliePosts.map((user) => (
         <div key={user.id}>{user.fullName}</div>
       ))}
 
       <form action={createUser}>
-        <button>create user</button>
+        <button type="submit">create user</button>
       </form>
     </>
   )
